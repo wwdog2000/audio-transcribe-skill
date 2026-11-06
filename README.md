@@ -31,30 +31,34 @@
 git clone https://github.com/YOUR_USERNAME/audio-transcribe-skill.git
 cd audio-transcribe-skill && bash install.sh
 
-💡 提示：把 YOUR_USERNAME 换成你的 GitHub 用户名。
+💡 提示：把 YOUR_USERNAME 换成你的 GitHub 用户名（例如 name****）。
 安装脚本会自动检查环境、下载依赖，并把技能注入到你的 Claude Code 或 Codex 中。
 
-🔑 第三步：配置 API Key
+## 🔑 第三步：配置 API Key
+
 在终端里直接运行下面这行命令（记得替换成你真实的 Key）：
 
 bash
 echo 'export DASHSCOPE_API_KEY="sk-你的真实Key"' >> ~/.zshrc && source ~/.zshrc
+
 🔒 安全警告：千万不要把你的 API Key 上传到 GitHub 公开仓库！
 
-🚀 第四步：开始使用
+## 🚀 第四步：开始使用
 最简单的用法
 处理你桌面上的视频，结果会保存在当前目录的 result.txt 中：
 
 bash
 asr "/Users/你的用户名/Desktop/测试视频.mp4" --out result.txt
+
 进阶用法
 需求	命令
 自动区分说话人	(默认已开启，无需加参数)
 不要区分说话人	asr "视频.mp4" --no-speakers --out result.txt
 给文字加上时间戳	asr "视频.mp4" --timestamps --out result.txt
 查看所有高级功能	asr --help
-📊 它是怎么工作的？
-text
+
+## 📊 它是怎么工作的？
+
 [你的视频/音频] 
       │
       ▼ (FFmpeg 自动提取音轨)
@@ -65,7 +69,8 @@ text
       │
       ▼ (本地保存)
 [result.txt 文字稿 + 时间戳 + 说话人]
-🤖 在 AI 助手里怎么用？
+
+## 🤖 在 AI 助手里怎么用？
 安装脚本完成后，你的技能已经存放在这里：
 
 Claude Code: ~/.claude/skills/audio-transcribe-cli-mcp/
@@ -75,7 +80,8 @@ Codex: ~/.agents/skills/audio-transcribe-cli-mcp/
 如果 AI 助手没有识别到它，请重启一下你的 AI 应用。
 之后，你只需要对 AI 说：“帮我用 asr 把桌面的视频转成文字”，它就会自动帮你执行。
 
-🚑 常见问题排查 (Troubleshooting)
+## 🚑 常见问题排查 (Troubleshooting)
+
 报错 asr: command not found：
 手动补装一下：python3 -m pip install audio-transcribe-cli-mcp
 
@@ -85,6 +91,6 @@ Codex: ~/.agents/skills/audio-transcribe-cli-mcp/
 提示 API Key 错误：
 在终端输入 echo $DASHSCOPE_API_KEY，看看有没有输出你的 Key。如果是空的，说明第三步没配好，重新执行一次第三步。
 
-📜 开源协议 & 致谢
+## 📜 开源协议 & 致谢
 MIT License.
 本项目的底层引擎基于 audio-transcribe-cli-mcp 构建，本仓库主要提供针对小白的保姆级安装脚本和 AI 技能封装。
