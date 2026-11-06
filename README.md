@@ -1,6 +1,6 @@
 # 🎙️ Audio Transcribe Skill
 
-**一句话，把视频和音频转换成带时间轴的文字稿。**
+**一款轻量级音视频转文字工具，支持完整文字稿生成与时间戳输出。**
 
 Audio Transcribe Skill 是一个面向 AI 助手的语音转文字技能包，适用于 Claude Code、Codex 等支持 Agent Skills 的 AI 工具。
 
