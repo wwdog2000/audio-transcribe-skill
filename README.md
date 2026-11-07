@@ -629,6 +629,149 @@ fi
 - 输入文件是否完整。
 - 输出目录是否具有写入权限。
 
+- ### 8. 识别失败或没有生成 TXT
+
+- ### 9. Deno JavaScript Runtime（YouTube 转写必需）
+
+从 YouTube 下载视频音频时，`yt-dlp` 需要 JavaScript Runtime 来完成 YouTube 视频信息提取。
+
+本项目推荐使用 **Deno**。请注意：
+
+- Deno 仅用于 YouTube 视频提取，不影响本地音视频转写。
+- 仅安装 `yt-dlp-ejs` 并不代表已经安装 JavaScript Runtime。
+- 本地 MP3、MP4 等文件转写不要求安装 Deno。
+
+#### 1. 安装 Deno
+
+macOS 用户推荐使用官方安装脚本：
+
+```bash
+curl -fsSL https://deno.land/install.sh | sh
+```
+
+安装完成后，刷新终端环境：
+
+```bash
+source ~/.zshrc
+hash -r
+```
+
+如果终端仍然找不到 Deno，可以手动执行：
+
+```bash
+export DENO_INSTALL="$HOME/.deno"
+export PATH="$DENO_INSTALL/bin:$PATH"
+```
+
+也可以将上述两行加入 `~/.zshrc`，使配置长期生效。
+
+#### 2. 验证安装
+
+执行：
+
+```bash
+deno --version
+command -v deno
+```
+
+正常情况下，应显示 Deno 版本信息及安装路径，例如：
+
+```text
+/Users/用户名/.deno/bin/deno
+```
+
+#### 3. 检查 yt-dlp 及 EJS 组件
+
+```bash
+yt-dlp --version
+python3 -m pip show yt-dlp-ejs
+```
+
+如果需要更新：
+
+```bash
+python3 -m pip install -U yt-dlp yt-dlp-ejs
+```
+
+---
+
+### 10. YouTube 下载失败及 HTTP 403 故障排查
+
+#### 1. 常见错误：HTTP Error 403: Forbidden
+
+可能出现以下错误：
+
+```text
+WARNING: No supported JavaScript runtime could be found.
+ERROR: unable to download video data: HTTP Error 403: Forbidden
+```
+
+常见原因包括：
+
+- 没有安装 JavaScript Runtime（例如 Deno）。
+- yt-dlp 或 yt-dlp-ejs 版本过旧。
+- YouTube 对当前网络出口或访问请求进行了限制。
+- 视频需要登录、授权或特定访问条件。
+
+#### 2. 推荐排查顺序
+
+**第一步：检查 Deno**
+
+```bash
+deno --version
+command -v deno
+```
+
+如果提示 `command not found`，请按照上面的 Deno 安装步骤操作。
+
+**第二步：更新 yt-dlp 和 EJS**
+
+```bash
+python3 -m pip install -U yt-dlp yt-dlp-ejs
+```
+
+**第三步：单独测试 YouTube 视频提取**
+
+```bash
+yt-dlp --verbose --simulate --no-playlist "YouTube视频链接"
+```
+
+说明：
+
+- `--verbose`：显示详细调试信息。
+- `--simulate`：只提取视频信息，不实际下载。
+- `--no-playlist`：只处理当前视频。
+
+如果能够正常显示视频标题和格式信息，说明基本提取流程正常。
+
+**第四步：仍然出现 HTTP 403 时**
+
+可以进一步检查：
+
+1. 更换网络环境，排除当前网络或 IP 访问限制。
+2. 检查视频是否需要登录或存在地区限制。
+3. 如果视频需要登录，可以在本机使用浏览器 Cookie 进行授权测试：
+
+```bash
+yt-dlp --cookies-from-browser chrome --simulate "YouTube视频链接"
+```
+
+注意：仅对自己有权访问的视频使用 Cookie。不要将 Cookie 文件、浏览器登录信息或账号凭证上传到 GitHub，也不要发送给他人。
+
+如果仍然失败，请保留 `--verbose` 输出，进一步判断是否为 YouTube 访问限制、PO Token 或其他提取问题。
+
+#### 3. 常见问题说明
+
+| 问题 | 处理方法 |
+|---|---|
+| `deno: command not found` | 安装 Deno 并检查 PATH |
+| `No supported JavaScript runtime` | 检查 Deno 是否可用 |
+| `HTTP Error 403` | 检查版本、网络、Cookie 和访问限制 |
+| `yt-dlp-ejs` 缺失 | 安装或更新 yt-dlp-ejs |
+| 本地 MP4 转写失败 | 检查 ffmpeg、ASR 和文件路径 |
+
+**特别说明：** Deno 可以解决缺少 JavaScript Runtime 导致的提取问题，但不能保证解决所有 HTTP 403 错误。
+
 ## 十、安装完成检查清单
 
 | 检查项目 | 成功标志 |
