@@ -23,3 +23,12 @@ venv/
 
 result.txt
 *.log
+
+# Testing and temporary files
+.pytest_cache/
+*.tmp
+*.part
+*.temp
+
+# Downloaded subtitles and generated transcription files
+*.srt
