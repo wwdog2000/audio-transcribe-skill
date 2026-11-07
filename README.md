@@ -113,12 +113,13 @@ macOS 用户如果使用 Zsh，可以按照以下步骤操作。
 ### 1. 打开配置文件
 
 ```bash
-nano ~/.zshrc
+touch ~/.zshrc && open -e ~/.zshrc
 ```
+你应该能看到一个普通的文本编辑窗口。
 
 ### 2. 添加 API Key
 
-在文件末尾添加以下内容，将占位符替换成自己的真实 API Key：
+在 TextEdit 窗口中，将占位符替换成自己的真实 API Key：
 
 ```bash
 export DASHSCOPE_API_KEY="sk-你的真实API-Key"
@@ -126,10 +127,13 @@ export DASHSCOPE_API_KEY="sk-你的真实API-Key"
 
 ### 3. 保存并使配置生效
 
-在 nano 编辑器中：
+在 Mac 键盘上按：
 
-- 按 `Control + O`，然后按回车保存。
-- 按 `Control + X` 退出。
+Command + S
+
+保存文件，然后关闭 TextEdit。
+
+如果 TextEdit 窗口显示的是富文本格式，请先在菜单栏选择「格式 → 制作为纯文本」，再保存。
 
 然后执行：
 
