@@ -21,6 +21,8 @@ Designed for beginners, this project provides an installation script and an easy
 
 ## 一、项目简介
 
+**一款轻量级音视频转文字工具，支持完整文字稿生成与时间戳输出。**
+
 Audio Transcribe Skill 是一个面向 AI 助手的音视频转文字工具，适用于 Claude Code、Codex 等支持 Agent Skills 的 AI 工具。
 
 本项目基于阿里云百炼 ASR（Automatic Speech Recognition）服务，可以自动提取音频或视频中的语音内容，支持中英文识别、多人对话说话人区分以及句级时间戳。
