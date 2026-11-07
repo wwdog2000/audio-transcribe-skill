@@ -2,16 +2,17 @@
 
 **Simple Audio & Video Transcription for AI Assistants**
 
-[中文](#中文说明) | [English](#english-documentation)
+[中文说明](#中文说明) | [English Documentation](#english-documentation)
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](https://www.python.org/)
-[![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Linux-lightgrey)]()
+[![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20Linux-lightgrey)](https://github.com/wwdog2000/audio-transcribe-skill)
 [![ASR](https://img.shields.io/badge/ASR-Aliyun%20Bailian-orange)](https://bailian.console.aliyun.com/)
+[![YouTube](https://img.shields.io/badge/YouTube-Transcription-red)](https://www.youtube.com/)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
 A lightweight audio and video transcription tool for AI assistants such as Claude Code and Codex.
 
-Powered by Alibaba Cloud Bailian ASR, it converts audio and video into text, supports speaker diarization and sentence-level timestamps, and exports transcription results as TXT files.
+Powered by Alibaba Cloud Bailian ASR, this project converts local audio/video files and YouTube videos into text. It supports speaker diarization, sentence-level timestamps, and TXT export.
 
 Designed for beginners, this project provides an installation script and an easy-to-follow setup guide.
 
@@ -21,11 +22,18 @@ Designed for beginners, this project provides an installation script and an easy
 
 ## 一、项目简介
 
-**一款轻量级音视频转文字工具，支持完整文字稿生成与时间戳输出。**
+**一款轻量级音视频转文字工具，支持本地音视频文件和 YouTube 视频转录。**
 
 Audio Transcribe Skill 是一个面向 AI 助手的音视频转文字工具，适用于 Claude Code、Codex 等支持 Agent Skills 的 AI 工具。
 
-本项目基于阿里云百炼 ASR（Automatic Speech Recognition）服务，可以自动提取音频或视频中的语音内容，支持中英文识别、多人对话说话人区分以及句级时间戳。
+本项目基于阿里云百炼 ASR（Automatic Speech Recognition）服务，可以自动提取音频或视频中的语音内容，并转换成文字。
+
+目前支持两种转录方式：
+
+- **本地音视频转录**：直接处理电脑中的音频或视频文件。
+- **YouTube 视频转录**：输入 YouTube 视频链接，自动下载音频并完成语音识别。
+
+支持说话人区分、句级时间戳和 TXT 文件导出。
 
 项目的目标是让没有编程经验的用户，也能快速安装和使用音视频转文字工具，并将其接入自己的 AI 工作流。
 
@@ -33,14 +41,74 @@ Audio Transcribe Skill 是一个面向 AI 助手的音视频转文字工具，�
 
 | 功能 | 说明 |
 |---|---|
-| 🎬 视频转文字 | 从视频文件中提取音轨并识别语音 |
-| 🎵 音频转文字 | 支持常见音频格式 |
+| 🎬 本地视频转文字 | 从本地视频文件中提取音轨并识别语音 |
+| 🎵 本地音频转文字 | 支持常见音频格式 |
+| ▶️ YouTube 转文字 | 输入 YouTube 链接，自动下载音频并转录 |
 | 🗣️ 说话人区分 | 自动区分不同说话人，默认开启 |
 | ⏱️ 时间戳 | 支持句级时间信息 |
 | 📄 文本导出 | 将识别结果保存为 TXT 文件 |
+| 🎧 音频保留 | 可选择保留下载的 YouTube 音频 |
 | 🤖 AI 助手集成 | 支持 Claude Code、Codex 等 Agent Skills 环境 |
 
-## 三、安装前的准备
+## 三、工作原理
+
+本项目采用两条处理流程，共用同一个 ASR 识别引擎。
+
+### 1. 本地音视频转录
+
+```text
+本地音频 / 视频文件
+        │
+        ▼
+      FFmpeg
+        │
+        ▼
+    音频处理
+        │
+        ▼
+   Alibaba Cloud
+      Bailian ASR
+        │
+        ▼
+    语音识别
+        │
+        ▼
+    TXT 文字稿
+```
+
+### 2. YouTube 视频转录
+
+```text
+YouTube 视频链接
+        │
+        ▼
+      yt-dlp
+        │
+        ▼
+    下载视频音频
+        │
+        ▼
+      FFmpeg
+        │
+        ▼
+     MP3 音频
+        │
+        ▼
+   原有 asr 命令
+        │
+        ▼
+   Alibaba Cloud
+      Bailian ASR
+        │
+        ▼
+    TXT 文字稿
+```
+
+两种方式均使用原有的 `audio-transcribe-cli-mcp` 识别引擎。
+
+YouTube 功能只是增加了音频下载和转录入口，没有替换原有 ASR 工具。
+
+## 四、安装前的准备
 
 本项目支持 macOS 和 Linux。
 
@@ -48,8 +116,11 @@ Audio Transcribe Skill 是一个面向 AI 助手的音视频转文字工具，�
 
 - Python 3.10 或更高版本
 - FFmpeg 和 ffprobe
-- 阿里云百炼 API Key
 - Git
+- 阿里云百炼 API Key
+- 网络连接
+
+YouTube 转录还需要 `yt-dlp`。安装脚本会自动检查并尝试安装该工具。
 
 ### 1. 检查 Python
 
@@ -64,8 +135,6 @@ python3 --version
 如果没有安装 Python，请访问：
 
 https://www.python.org/downloads/
-
-下载安装后重新打开终端检查。
 
 ### 2. 检查 FFmpeg
 
@@ -98,7 +167,7 @@ https://bailian.console.aliyun.com/
 
 请妥善保存 API Key，不要公开或上传到 GitHub。
 
-## 四、一键安装
+## 五、一键安装
 
 ### 1. 下载项目
 
@@ -124,8 +193,12 @@ bash install.sh
 
 1. 检查 Python 版本。
 2. 检查 FFmpeg 和 ffprobe。
-3. 安装音视频转文字 CLI 工具及相关依赖。
-4. 将 Agent Skill 安装到 Claude Code 和 Codex 对应目录。
+3. 安装或升级音视频转文字 CLI 工具。
+4. 检查并安装 yt-dlp。
+5. 安装 YouTube 转录脚本。
+6. 创建 `asr-youtube` 命令。
+7. 配置必要的命令搜索路径。
+8. 将 Agent Skill 安装到 Claude Code 和 Codex 对应目录。
 
 如果出现：
 
@@ -135,27 +208,33 @@ Installation completed!
 
 说明安装脚本已经执行完成。
 
-**注意：** 安装脚本执行完成不一定代表 `asr` 命令已经可以正常使用。还需要进行下面的验证。
-
 ### 3. 验证安装
 
-执行：
+依次执行：
+
+检查原有 ASR 命令：
 
 ```bash
 asr --help
 ```
 
-如果显示命令帮助信息，说明 CLI 已经可以正常调用。
+检查 YouTube 转录命令：
 
-如果出现：
-
-```text
-command not found: asr
+```bash
+asr-youtube --help
 ```
 
-请查看「常见问题排查」。
+检查 yt-dlp：
 
-## 五、配置 API Key
+```bash
+yt-dlp --version
+```
+
+如果三项都能正常显示帮助信息或版本号，说明相关工具已经安装。
+
+**注意：** 安装完成不代表 API Key 已经配置，也不代表已经完成真实视频转录。还需要进行后续测试。
+
+## 六、配置 API Key
 
 API Key 是调用阿里云百炼服务的必要条件。
 
@@ -225,11 +304,13 @@ fi
 API Key 已配置
 ```
 
-说明配置成功。
+说明当前终端已经读取到 API Key。
 
 ### Linux 用户：配置环境变量
 
-Linux 用户根据实际使用的 Shell，编辑对应配置文件，例如 Bash 用户可以使用：
+Linux 用户根据实际使用的 Shell，编辑对应配置文件。
+
+例如 Bash 用户：
 
 ```bash
 nano ~/.bashrc
@@ -261,32 +342,36 @@ fi
 
 - 不要将真实 API Key 写入公开 README 或代码。
 - 不要将包含 API Key 的配置文件上传到 GitHub。
-- 音视频文件会上传至阿里云百炼进行语音识别。
+- 本地文件和 YouTube 下载的音频会通过阿里云百炼服务进行语音识别。
 - 处理私人或敏感录音前，请确认已获得必要授权。
+- 下载 YouTube 内容时，请遵守适用法律、平台条款和版权要求。
 
-## 六、开始使用
+## 七、开始使用
 
-安装和配置完成后，可以直接在终端中使用 `asr` 命令。
+安装和配置完成后，可以直接在终端中使用。
 
-### 1. 视频转文字
+### 1. 本地视频转文字
 
 ```bash
 asr "/Users/你的用户名/Desktop/测试视频.mp4"
 ```
 
-默认情况下，识别结果保存为当前目录下的：
+默认情况下，识别结果保存为当前目录下的 `result.txt`。
 
-```text
-result.txt
-```
-
-### 2. 指定输出文件
+### 2. 本地音频转文字
 
 ```bash
-asr "/Users/你的用户名/Desktop/测试视频.mp4" --out "/Users/你的用户名/Desktop/识别结果.txt"
+asr "/Users/你的用户名/Desktop/会议录音.mp3"
 ```
 
-### 3. 常用参数
+### 3. 指定输出文件
+
+```bash
+asr "/Users/你的用户名/Desktop/测试视频.mp4" \
+  --out "/Users/你的用户名/Desktop/识别结果.txt"
+```
+
+### 4. 本地转录常用参数
 
 | 使用需求 | 命令 |
 |---|---|
@@ -296,35 +381,78 @@ asr "/Users/你的用户名/Desktop/测试视频.mp4" --out "/Users/你的用户
 | 指定输出文件 | `asr video.mp4 --out result.txt` |
 | 查看所有参数 | `asr --help` |
 
-### 4. 实际使用示例
+### 5. YouTube 视频转文字
 
-视频转文字：
+这是本次升级新增的功能。
 
-```bash
-asr interview.mp4 --out interview.txt
-```
+只需要提供 YouTube 视频链接，不需要手动下载视频或提取音频。
 
-音频转文字：
+**基本使用：**
 
 ```bash
-asr meeting.mp3 --out meeting.txt
+asr-youtube "https://www.youtube.com/watch?v=VIDEO_ID"
 ```
 
-不区分说话人：
+命令会自动完成：
+
+1. 检查 YouTube 链接。
+2. 使用 yt-dlp 下载视频音频。
+3. 使用 FFmpeg 将音频转换为 MP3。
+4. 调用原有 `asr` 命令。
+5. 完成语音识别。
+6. 生成 TXT 文字稿。
+7. 清理临时音频文件。
+
+默认情况下，文字稿保存在当前工作目录，文件名根据视频标题生成。
+
+### 6. 指定 YouTube 转录文件
 
 ```bash
-asr interview.mp4 --no-speakers --out interview.txt
+asr-youtube "https://www.youtube.com/watch?v=VIDEO_ID" \
+  --out "./youtube-transcript.txt"
 ```
 
-生成带时间戳的文字稿：
+### 7. YouTube 转录常用参数
+
+| 使用需求 | 命令 |
+|---|---|
+| 基本转录 | `asr-youtube "YouTube链接"` |
+| 指定输出文件 | `--out "./result.txt"` |
+| 添加时间戳 | `--timestamps` |
+| 不区分说话人 | `--no-speakers` |
+| 保留下载音频 | `--keep-audio` |
+| 查看所有参数 | `asr-youtube --help` |
+
+### 8. 组合使用参数
+
+例如：转录 YouTube 视频、添加时间戳、保留下载音频，并指定文字稿路径。
 
 ```bash
-asr meeting.mp3 --timestamps --out meeting.txt
+asr-youtube "https://www.youtube.com/watch?v=VIDEO_ID" \
+  --timestamps \
+  --keep-audio \
+  --out "./youtube-transcript.txt"
 ```
 
-说明：`--timestamps` 会输出带时间信息的文本，采用 SRT 风格的时间标记，但输出文件仍然是文本文件，并非标准 `.srt` 字幕文件。
+### 9. 关于下载音频
 
-### 5. macOS 初学者：如何快速输入文件路径？
+默认情况下，YouTube 视频下载的临时 MP3 会在转录结束后清理。
+
+如果需要保留音频文件，请添加：
+
+```bash
+--keep-audio
+```
+
+这样可以在后续进行音频剪辑、复听或其他处理。
+
+### 10. 关于时间戳
+
+`--timestamps` 会输出带时间信息的文本，采用 SRT 风格的时间标记。
+
+但输出文件仍然是 TXT 文本文件，并非标准 `.srt` 字幕文件。
+
+### 11. macOS 初学者：如何快速输入本地文件路径？
 
 不需要手动输入很长的文件路径。
 
@@ -337,7 +465,7 @@ asr meeting.mp3 --timestamps --out meeting.txt
 
 这样可以避免文件路径输入错误。
 
-## 七、在 AI 助手中使用
+## 八、在 AI 助手中使用
 
 本项目不仅可以在终端中独立运行，还可以作为 Agent Skill 接入 AI 助手。
 
@@ -361,7 +489,7 @@ asr meeting.mp3 --timestamps --out meeting.txt
 SKILL.md
 ```
 
-### 使用示例
+### 1. 本地文件转录示例
 
 安装成功后，可以向 AI 助手提出自然语言请求：
 
@@ -370,13 +498,23 @@ SKILL.md
 自动区分说话人，并保存为 interview.txt。
 ```
 
-AI 助手可以根据 Skill 中的说明调用 `asr` 命令完成任务。
+### 2. YouTube 视频转录示例
+
+```text
+帮我把这个 YouTube 视频转换成文字稿：
+
+https://www.youtube.com/watch?v=VIDEO_ID
+
+保留说话人区分，并添加时间戳。
+```
+
+AI 助手可以根据 Skill 中的说明，选择对应命令完成转录。
 
 如果 AI 助手没有立即识别到新安装的 Skill，可以尝试重启应用或重新加载技能。
 
 注意：AI 助手能否自动识别并调用 Skill，取决于所使用工具对 Agent Skills 的支持情况及其配置。
 
-## 八、常见问题排查
+## 九、常见问题排查
 
 ### 1. 提示 `asr: command not found`
 
@@ -396,7 +534,43 @@ python3 -m pip install audio-transcribe-cli-mcp
 
 如果已经安装但命令仍不可用，需要检查 Python 的安装路径和 PATH 环境变量。
 
-### 2. 提示 `ffmpeg not found`
+### 2. 提示 `asr-youtube: command not found`
+
+重新进入项目目录，执行：
+
+```bash
+bash install.sh
+```
+
+然后检查：
+
+```bash
+asr-youtube --help
+```
+
+如果仍然找不到命令，检查：
+
+```bash
+echo "$PATH"
+```
+
+确认 `~/.local/bin` 已经加入 PATH。
+
+### 3. 提示 `yt-dlp: command not found`
+
+macOS 用户可以执行：
+
+```bash
+brew install yt-dlp
+```
+
+然后检查：
+
+```bash
+yt-dlp --version
+```
+
+### 4. 提示 `ffmpeg not found`
 
 macOS 用户可以执行：
 
@@ -411,7 +585,7 @@ ffmpeg -version
 ffprobe -version
 ```
 
-### 3. 提示 API Key 错误
+### 5. 提示 API Key 错误
 
 检查环境变量：
 
@@ -427,31 +601,35 @@ fi
 
 同时确认阿里云百炼 API Key 有效，并且相关服务已经开通。
 
-### 4. AI 助手没有识别到 Skill
+### 6. YouTube 视频下载失败
 
-检查 Claude Code：
+请检查：
 
-```bash
-ls ~/.claude/skills/audio-transcribe-cli-mcp/
-```
+- YouTube 链接是否正确。
+- 视频是否可以公开访问。
+- 当前网络是否能够访问 YouTube。
+- yt-dlp 是否为较新版本。
+- FFmpeg 是否已经安装。
+- 视频是否存在地区、年龄或访问权限限制。
 
-检查 Codex：
-
-```bash
-ls ~/.agents/skills/audio-transcribe-cli-mcp/
-```
-
-确认目录中包含 `SKILL.md`，然后重启对应的 AI 助手。
-
-### 5. 说话人区分效果不理想
-
-工具会自动检测说话人数量。
+### 7. 说话人区分效果不理想
 
 如果音频中说话人音色接近，或者录音质量较差，可能影响区分效果。
 
 识别结果也可能存在标点或专有名词错误，建议将文字稿交给 AI 进一步校对。
 
-## 九、安装完成检查清单
+### 8. 识别失败或没有生成 TXT
+
+检查：
+
+- API Key 是否有效。
+- 网络是否正常。
+- 阿里云百炼服务是否可用。
+- 账户是否有足够的服务额度。
+- 输入文件是否完整。
+- 输出目录是否具有写入权限。
+
+## 十、安装完成检查清单
 
 | 检查项目 | 成功标志 |
 |---|---|
@@ -460,42 +638,14 @@ ls ~/.agents/skills/audio-transcribe-cli-mcp/
 | ffprobe | 能显示版本信息 |
 | 安装脚本 | 显示 `Installation completed!` |
 | ASR 命令 | `asr --help` 正常 |
+| YouTube 命令 | `asr-youtube --help` 正常 |
+| yt-dlp | 能显示版本信息 |
 | API Key | 显示 `API Key 已配置` |
-| 转写测试 | 成功生成 `result.txt` |
+| 本地转录测试 | 成功生成 TXT 文件 |
+| YouTube 转录测试 | 成功生成 TXT 文件 |
 | Skill 文件 | 找到 `SKILL.md` |
 
-建议先通过终端完成一次音视频转写测试，再使用 AI 助手调用。
-
-## 十、工作原理
-
-```text
-输入视频 / 音频
-       │
-       ▼
-FFmpeg 提取音轨
-       │
-       ▼
-音频数据处理
-       │
-       ▼
-上传至阿里云百炼 ASR
-       │
-       ▼
-语音识别与说话人区分
-       │
-       ▼
-返回识别结果
-       │
-       ▼
-本地保存文字稿
-       │
-       ▼
-result.txt
-```
-
-整个过程由 CLI 工具自动完成。
-
-用户只需要提供音视频文件路径和必要参数。
+建议先通过终端分别完成一次本地文件转录和 YouTube 转录测试，再使用 AI 助手调用。
 
 ## 十一、项目目录结构
 
@@ -507,6 +657,9 @@ audio-transcribe-skill/
 ├── .gitignore
 ├── LICENSE
 │
+├── scripts/
+│   └── asr_youtube.py
+│
 ├── skills/
 │   └── audio-transcribe-cli-mcp/
 │       └── SKILL.md
@@ -514,6 +667,17 @@ audio-transcribe-skill/
 └── examples/
     └── 使用示例.md
 ```
+
+其中：
+
+| 文件 | 作用 |
+|---|---|
+| `README.md` | 项目说明和使用教程 |
+| `install.sh` | 一键安装脚本 |
+| `scripts/asr_youtube.py` | YouTube 下载与转录程序 |
+| `SKILL.md` | AI 助手的技能说明文件 |
+| `.gitignore` | Git 忽略文件配置 |
+| `LICENSE` | 开源协议 |
 
 ## 十二、项目来源与开源协议
 
@@ -529,7 +693,7 @@ https://pypi.org/project/audio-transcribe-cli-mcp/
 
 上游项目提供底层音视频转文字 CLI、MCP Server 和相关功能。
 
-本仓库主要面向初学者，提供更直观的安装说明、安装脚本及 AI Agent Skill 封装。
+本仓库主要面向初学者，提供更直观的安装说明、YouTube 转录入口、安装脚本及 AI Agent Skill 封装。
 
 本项目采用 MIT License。上游项目的原作者及其版权声明应按照原项目许可证要求保留。
 
@@ -541,24 +705,87 @@ https://pypi.org/project/audio-transcribe-cli-mcp/
 
 Audio Transcribe Skill is a lightweight audio and video transcription tool designed for AI assistants such as Claude Code and Codex.
 
-Powered by Alibaba Cloud Bailian ASR (Automatic Speech Recognition), it extracts speech from audio and video files and converts it into text.
+Powered by Alibaba Cloud Bailian ASR (Automatic Speech Recognition), it converts local audio/video files and YouTube videos into text.
 
-The tool supports Chinese and English recognition, speaker diarization, sentence-level timestamps, and TXT output.
+It supports speaker diarization, sentence-level timestamps, and TXT export.
 
 This project aims to make audio transcription accessible to beginners and easy to integrate into AI workflows.
+
+Two transcription workflows are supported:
+
+- **Local transcription:** Process audio and video files stored on your computer.
+- **YouTube transcription:** Provide a YouTube URL and automatically download and transcribe its audio.
 
 ## 2. Features
 
 | Feature | Description |
 |---|---|
-| 🎬 Video Transcription | Extract audio from video files and transcribe speech |
-| 🎵 Audio Transcription | Transcribe common audio formats |
+| 🎬 Local Video Transcription | Extract audio from local video files and transcribe speech |
+| 🎵 Local Audio Transcription | Transcribe common audio formats |
+| ▶️ YouTube Transcription | Download audio from YouTube URLs and transcribe it |
 | 🗣️ Speaker Diarization | Automatically distinguish speakers; enabled by default |
 | ⏱️ Timestamps | Support sentence-level timestamps |
 | 📄 TXT Export | Save transcription results as TXT files |
+| 🎧 Keep Downloaded Audio | Optionally retain downloaded YouTube audio |
 | 🤖 AI Integration | Install as an Agent Skill for Claude Code and Codex |
 
-## 3. Prerequisites
+## 3. How It Works
+
+The project provides two workflows using the same ASR engine.
+
+### Local Audio and Video
+
+```text
+Local Audio / Video
+        │
+        ▼
+      FFmpeg
+        │
+        ▼
+    Audio Processing
+        │
+        ▼
+ Alibaba Cloud Bailian ASR
+        │
+        ▼
+  Speech Recognition
+        │
+        ▼
+    TXT Transcript
+```
+
+### YouTube Videos
+
+```text
+YouTube Video URL
+        │
+        ▼
+      yt-dlp
+        │
+        ▼
+   Download Audio
+        │
+        ▼
+      FFmpeg
+        │
+        ▼
+     MP3 Audio
+        │
+        ▼
+    Existing asr CLI
+        │
+        ▼
+ Alibaba Cloud Bailian ASR
+        │
+        ▼
+    TXT Transcript
+```
+
+Both workflows use the existing `audio-transcribe-cli-mcp` recognition engine.
+
+YouTube support adds an audio download and transcription entry point without replacing the original ASR tool.
+
+## 4. Prerequisites
 
 This project supports macOS and Linux.
 
@@ -566,12 +793,13 @@ Before installation, make sure you have:
 
 - Python 3.10 or newer
 - FFmpeg and ffprobe
-- An Alibaba Cloud Bailian API Key
 - Git
+- An Alibaba Cloud Bailian API Key
+- Network access
 
-### 3.1 Check Python
+For YouTube transcription, `yt-dlp` is also required. The installer checks for and attempts to install it automatically.
 
-Open your terminal and run:
+### 4.1 Check Python
 
 ```bash
 python3 --version
@@ -583,9 +811,7 @@ If Python is not installed, download it from:
 
 https://www.python.org/downloads/
 
-### 3.2 Check FFmpeg
-
-Run:
+### 4.2 Check FFmpeg
 
 ```bash
 ffmpeg -version
@@ -602,7 +828,7 @@ brew install ffmpeg
 
 On Linux, install FFmpeg using your distribution's package manager.
 
-### 3.3 Get an Alibaba Cloud Bailian API Key
+### 4.3 Get an Alibaba Cloud Bailian API Key
 
 This tool uses Alibaba Cloud Bailian ASR for speech recognition.
 
@@ -614,11 +840,9 @@ Sign in, enable the required service, and obtain your API Key.
 
 Keep your API Key private. Never publish it in your GitHub repository.
 
-## 4. Installation
+## 5. Installation
 
-### 4.1 Clone the Repository
-
-Open your terminal and run:
+### 5.1 Clone the Repository
 
 ```bash
 git clone https://github.com/wwdog2000/audio-transcribe-skill.git
@@ -630,7 +854,7 @@ Enter the project directory:
 cd audio-transcribe-skill
 ```
 
-### 4.2 Run the Installation Script
+### 5.2 Run the Installation Script
 
 Execute:
 
@@ -642,8 +866,12 @@ The installer automatically:
 
 1. Checks the Python version.
 2. Checks whether FFmpeg and ffprobe are installed.
-3. Installs the transcription CLI and its dependencies.
-4. Copies the Agent Skill to the Claude Code and Codex skill directories.
+3. Installs or upgrades the transcription CLI.
+4. Checks for and installs yt-dlp.
+5. Installs the YouTube transcription script.
+6. Creates the `asr-youtube` command.
+7. Configures the required command path.
+8. Copies the Agent Skill to the Claude Code and Codex skill directories.
 
 If you see:
 
@@ -653,27 +881,31 @@ Installation completed!
 
 the installation script has finished.
 
-**Important:** This message does not necessarily mean that the `asr` command is already available. Verify it in the next step.
+### 5.3 Verify the Installation
 
-### 4.3 Verify the Installation
-
-Run:
+Check the original ASR command:
 
 ```bash
 asr --help
 ```
 
-If the command displays its help information, the CLI is ready to use.
+Check the YouTube command:
 
-If you see:
-
-```text
-command not found: asr
+```bash
+asr-youtube --help
 ```
 
-please refer to the Troubleshooting section.
+Check yt-dlp:
 
-## 5. Configure the API Key
+```bash
+yt-dlp --version
+```
+
+All three commands should display help information or version numbers.
+
+**Important:** Successful installation does not mean your API Key is configured or that transcription has been tested. Complete the following setup and tests.
+
+## 6. Configure the API Key
 
 An Alibaba Cloud Bailian API Key is required to use the transcription service.
 
@@ -691,7 +923,7 @@ touch ~/.zshrc && open -e ~/.zshrc
 
 Press Enter.
 
-TextEdit will open the configuration file. If the file does not exist, the command creates it first.
+TextEdit will open the configuration file.
 
 **Step 2: Add your API Key**
 
@@ -728,8 +960,6 @@ source ~/.zshrc
 ```
 
 **Step 5: Verify the API Key**
-
-Run:
 
 ```bash
 if [ -n "$DASHSCOPE_API_KEY" ]; then
@@ -781,34 +1011,34 @@ fi
 
 - Never publish your real API Key in a public repository.
 - Never upload configuration files containing API Keys to GitHub.
-- Audio and video files are uploaded to Alibaba Cloud Bailian for speech recognition.
+- Local media and downloaded YouTube audio are sent to Alibaba Cloud Bailian for speech recognition.
 - Obtain the necessary authorization before processing private or sensitive recordings.
+- Follow applicable laws, platform terms, and copyright requirements when downloading YouTube content.
 
-## 6. Usage
+## 7. Usage
 
-After installation and API Key configuration, you can use the `asr` command directly.
-
-### 6.1 Transcribe a Video
+### 7.1 Local Video Transcription
 
 ```bash
 asr "/Users/your-username/Desktop/video.mp4"
 ```
 
-By default, the transcription result is saved as:
+By default, the transcription result is saved as `result.txt` in the current working directory.
 
-```text
-result.txt
-```
-
-in the current working directory.
-
-### 6.2 Specify an Output File
+### 7.2 Local Audio Transcription
 
 ```bash
-asr "/Users/your-username/Desktop/video.mp4" --out "/Users/your-username/Desktop/transcript.txt"
+asr "/Users/your-username/Desktop/meeting.mp3"
 ```
 
-### 6.3 Common Options
+### 7.3 Specify an Output File
+
+```bash
+asr "/Users/your-username/Desktop/video.mp4" \
+  --out "/Users/your-username/Desktop/transcript.txt"
+```
+
+### 7.4 Local Transcription Options
 
 | Task | Command |
 |---|---|
@@ -818,35 +1048,78 @@ asr "/Users/your-username/Desktop/video.mp4" --out "/Users/your-username/Desktop
 | Specify output file | `asr video.mp4 --out result.txt` |
 | Display all options | `asr --help` |
 
-### 6.4 Examples
+### 7.5 YouTube Video Transcription
 
-Transcribe a video:
+This is the new feature introduced in this release.
 
-```bash
-asr interview.mp4 --out interview.txt
-```
+Simply provide a YouTube video URL. You do not need to manually download the video or extract its audio.
 
-Transcribe an audio file:
+**Basic usage:**
 
 ```bash
-asr meeting.mp3 --out meeting.txt
+asr-youtube "https://www.youtube.com/watch?v=VIDEO_ID"
 ```
 
-Disable speaker diarization:
+The command automatically:
+
+1. Validates the YouTube URL.
+2. Uses yt-dlp to download the video's audio.
+3. Uses FFmpeg to convert the audio to MP3.
+4. Calls the existing `asr` command.
+5. Performs speech recognition.
+6. Generates a TXT transcript.
+7. Cleans up temporary audio files.
+
+By default, the transcript is saved in the current working directory using a filename based on the video title.
+
+### 7.6 Specify the YouTube Transcript File
 
 ```bash
-asr interview.mp4 --no-speakers --out interview.txt
+asr-youtube "https://www.youtube.com/watch?v=VIDEO_ID" \
+  --out "./youtube-transcript.txt"
 ```
 
-Generate a transcript with timestamps:
+### 7.7 YouTube Transcription Options
+
+| Task | Option |
+|---|---|
+| Basic transcription | `asr-youtube "YouTube URL"` |
+| Specify output file | `--out "./result.txt"` |
+| Add timestamps | `--timestamps` |
+| Disable speaker diarization | `--no-speakers` |
+| Keep downloaded audio | `--keep-audio` |
+| Display all options | `asr-youtube --help` |
+
+### 7.8 Combine Options
+
+For example, transcribe a YouTube video with timestamps, retain the downloaded audio, and specify the transcript path:
 
 ```bash
-asr meeting.mp3 --timestamps --out meeting.txt
+asr-youtube "https://www.youtube.com/watch?v=VIDEO_ID" \
+  --timestamps \
+  --keep-audio \
+  --out "./youtube-transcript.txt"
 ```
 
-**Note:** The `--timestamps` option produces text with SRT-style time markers. The output remains a text file and is not a standard `.srt` subtitle file.
+### 7.9 Downloaded Audio
 
-### 6.5 Beginner Tip: How to Enter a File Path on macOS
+By default, temporary downloaded MP3 files are cleaned up after transcription.
+
+To keep a copy of the downloaded audio, add:
+
+```bash
+--keep-audio
+```
+
+The audio can then be used for further editing, review, or processing.
+
+### 7.10 Timestamps
+
+The `--timestamps` option produces text with SRT-style time markers.
+
+The output remains a TXT file and is not a standard `.srt` subtitle file.
+
+### 7.11 Beginner Tip: Enter a File Path on macOS
 
 You do not need to type a long file path manually.
 
@@ -859,19 +1132,19 @@ You do not need to type a long file path manually.
 
 This method helps avoid incorrect file paths.
 
-## 7. Use with AI Assistants
+## 8. Use with AI Assistants
 
 This project can run independently in the terminal or be integrated into supported AI assistants as an Agent Skill.
 
 The installation script copies the Skill file into the following directories.
 
-**Claude Code:**
+**Claude Code**
 
 ```text
 ~/.claude/skills/audio-transcribe-cli-mcp/
 ```
 
-**Codex:**
+**Codex**
 
 ```text
 ~/.agents/skills/audio-transcribe-cli-mcp/
@@ -883,7 +1156,7 @@ The directory should contain:
 SKILL.md
 ```
 
-### Example Prompt
+### 8.1 Local File Example
 
 After installation, you can ask your AI assistant:
 
@@ -893,15 +1166,25 @@ identify different speakers,
 and save the result as interview.txt.
 ```
 
-The AI assistant can use the instructions in the Skill to call the `asr` command.
+### 8.2 YouTube Example
+
+```text
+Please transcribe this YouTube video:
+
+https://www.youtube.com/watch?v=VIDEO_ID
+
+Keep speaker diarization enabled and include timestamps.
+```
+
+The AI assistant can use the instructions in the Skill to select the appropriate command.
 
 If the Skill is not immediately recognized, restart the AI assistant or reload its skills.
 
 **Note:** Automatic Skill discovery and execution depend on the AI assistant's Agent Skills support and configuration.
 
-## 8. Troubleshooting
+## 9. Troubleshooting
 
-### 8.1 `asr: command not found`
+### 9.1 `asr: command not found`
 
 The system cannot locate the `asr` command.
 
@@ -919,7 +1202,43 @@ python3 -m pip install audio-transcribe-cli-mcp
 
 If the package is installed but the command is still unavailable, check your Python installation path and PATH environment variable.
 
-### 8.2 `ffmpeg not found`
+### 9.2 `asr-youtube: command not found`
+
+Run the installer again from the project directory:
+
+```bash
+bash install.sh
+```
+
+Then check:
+
+```bash
+asr-youtube --help
+```
+
+If the command is still unavailable, check:
+
+```bash
+echo "$PATH"
+```
+
+Make sure `~/.local/bin` is included in PATH.
+
+### 9.3 `yt-dlp: command not found`
+
+On macOS, run:
+
+```bash
+brew install yt-dlp
+```
+
+Then verify:
+
+```bash
+yt-dlp --version
+```
+
+### 9.4 `ffmpeg not found`
 
 On macOS, run:
 
@@ -934,7 +1253,7 @@ ffmpeg -version
 ffprobe -version
 ```
 
-### 8.3 API Key Error
+### 9.5 API Key Error
 
 Check the environment variable:
 
@@ -950,31 +1269,35 @@ If it is not configured, repeat the API Key setup steps.
 
 Also verify that your API Key is valid and the required Alibaba Cloud Bailian service is enabled.
 
-### 8.4 AI Assistant Cannot Find the Skill
+### 9.6 YouTube Download Failure
 
-Check the Claude Code directory:
+Check:
 
-```bash
-ls ~/.claude/skills/audio-transcribe-cli-mcp/
-```
+- Whether the YouTube URL is valid.
+- Whether the video is publicly accessible.
+- Whether your network can access YouTube.
+- Whether yt-dlp is up to date.
+- Whether FFmpeg is installed.
+- Whether the video has regional, age, or access restrictions.
 
-Check the Codex directory:
-
-```bash
-ls ~/.agents/skills/audio-transcribe-cli-mcp/
-```
-
-Make sure `SKILL.md` exists, then restart the corresponding AI assistant.
-
-### 8.5 Speaker Diarization Is Not Accurate
-
-The tool automatically detects the number of speakers.
+### 9.7 Speaker Diarization Is Not Accurate
 
 Similar voices or poor recording quality may affect speaker identification.
 
 Transcription results may also contain punctuation or proper-name errors. You can use an AI assistant to proofread and improve the transcript.
 
-## 9. Installation Checklist
+### 9.8 Transcription Failed or No TXT File Was Generated
+
+Check:
+
+- Whether the API Key is valid.
+- Whether the network connection is working.
+- Whether Alibaba Cloud Bailian is available.
+- Whether your account has sufficient service quota.
+- Whether the input file is valid.
+- Whether the output directory is writable.
+
+## 10. Installation Checklist
 
 | Check | Expected Result |
 |---|---|
@@ -983,42 +1306,14 @@ Transcription results may also contain punctuation or proper-name errors. You ca
 | ffprobe | Version information displayed |
 | Installer | `Installation completed!` |
 | ASR command | `asr --help` works |
+| YouTube command | `asr-youtube --help` works |
+| yt-dlp | Version information displayed |
 | API Key | Environment variable configured |
-| Transcription test | `result.txt` generated successfully |
+| Local transcription test | TXT file generated successfully |
+| YouTube transcription test | TXT file generated successfully |
 | Skill installation | `SKILL.md` exists |
 
-We recommend completing one successful transcription from the terminal before using the AI assistant integration.
-
-## 10. How It Works
-
-```text
-Input Audio / Video
-        │
-        ▼
-FFmpeg Audio Extraction
-        │
-        ▼
-Audio Processing
-        │
-        ▼
-Upload to Alibaba Cloud Bailian ASR
-        │
-        ▼
-Speech Recognition and Diarization
-        │
-        ▼
-Return Transcription Results
-        │
-        ▼
-Save Transcript Locally
-        │
-        ▼
-result.txt
-```
-
-The CLI handles the entire process automatically.
-
-Users only need to provide an audio or video file path and the required options.
+We recommend completing one successful local transcription and one successful YouTube transcription from the terminal before using the AI assistant integration.
 
 ## 11. Project Structure
 
@@ -1030,6 +1325,9 @@ audio-transcribe-skill/
 ├── .gitignore
 ├── LICENSE
 │
+├── scripts/
+│   └── asr_youtube.py
+│
 ├── skills/
 │   └── audio-transcribe-cli-mcp/
 │       └── SKILL.md
@@ -1037,6 +1335,15 @@ audio-transcribe-skill/
 └── examples/
     └── 使用示例.md
 ```
+
+| File | Description |
+|---|---|
+| `README.md` | Project overview and user guide |
+| `install.sh` | One-click installation script |
+| `scripts/asr_youtube.py` | YouTube audio download and transcription program |
+| `SKILL.md` | AI assistant skill instructions |
+| `.gitignore` | Git ignore configuration |
+| `LICENSE` | Open-source license |
 
 ## 12. Credits and License
 
@@ -1052,7 +1359,7 @@ https://pypi.org/project/audio-transcribe-cli-mcp/
 
 The upstream project provides the underlying audio/video transcription CLI, MCP Server, and related functionality.
 
-This repository focuses on beginner-friendly installation instructions, an installation script, and Agent Skill integration for tools such as Claude Code and Codex.
+This repository focuses on beginner-friendly installation instructions, YouTube transcription support, an installation script, and Agent Skill integration.
 
 This project is released under the MIT License. Original copyright notices and license requirements from the upstream project must be preserved.
 
