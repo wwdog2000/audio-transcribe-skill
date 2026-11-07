@@ -4,80 +4,75 @@ name: audio-transcribe-cli-mcp
 description: Transcribe local audio and video files or publicly accessible YouTube videos into text using Alibaba Cloud Bailian ASR. Use when the user asks to transcribe audio, video, YouTube links, extract dialogue, identify speakers, or obtain timestamps.
 ---
 
+---
+name: audio-transcribe-cli-mcp
+description: Transcribe local audio and video files or YouTube videos into text using Alibaba Cloud Bailian ASR. Use when the user asks to transcribe recordings, convert speech to text, extract dialogue, identify speakers, or obtain timestamps.
+---
+
 # Audio and Video Transcription Skill
 
-## 1. Purpose
+## Purpose
 
-This skill supports two transcription workflows:
+Convert audio and video into text using Alibaba Cloud Bailian ASR.
 
-1. Local audio and video transcription using the existing `asr` command.
-2. YouTube video transcription using the `asr-youtube` command.
+This Skill supports two input types:
 
-Both workflows use Alibaba Cloud Bailian ASR for speech recognition.
+1. Local audio and video files.
+2. YouTube video URLs.
 
-Always choose the correct workflow based on the user's input.
+Choose the appropriate workflow according to the user's input.
 
-## 2. Requirements
+## Requirements
 
-Common requirements:
+- macOS or Linux.
+- Python 3.10 or newer.
+- ffmpeg and ffprobe installed and available in PATH.
+- Python package `audio-transcribe-cli-mcp` installed.
+- `DASHSCOPE_API_KEY` configured in the environment.
+- `yt-dlp` installed for YouTube transcription.
+- `asr` command available for local transcription.
+- `asr-youtube` command available for YouTube transcription.
 
-- macOS or Linux
-- Python 3.10 or newer
-- ffmpeg and ffprobe installed and available in PATH
-- audio-transcribe-cli-mcp installed
-- `asr` command available
-- `DASHSCOPE_API_KEY` configured in the environment
+## Supported Input
 
-Additional requirements for YouTube transcription:
+### Local audio and video
 
-- `yt-dlp` installed and available in PATH
-- `asr-youtube` command installed and available in PATH
-- Internet access
+Formats supported by ffmpeg, including:
 
-## 3. Identify the Input Type
+- Video: MP4, MOV, MKV.
+- Audio: MP3, WAV, M4A.
+- Other formats supported by ffmpeg.
 
-Before transcription, identify the input.
+### YouTube videos
 
-### Local audio or video files
+Supported URL formats include:
 
-Supported examples:
+- `https://www.youtube.com/watch?v=VIDEO_ID`
+- `https://youtu.be/VIDEO_ID`
+- `https://www.youtube.com/shorts/VIDEO_ID`
 
-- MP4, MOV, MKV
-- MP3, WAV, M4A
-- AAC, FLAC, OGG, OPUS
-- Other formats supported by ffmpeg
+Only public or otherwise accessible videos can be downloaded. Private, restricted, age-restricted, or region-blocked videos may fail.
 
-Use the `asr` command for local files.
+## Workflow
 
-### YouTube URLs
+### Step 1: Identify the input type
 
-Recognize common YouTube URL formats:
+Determine whether the user provided:
 
-- https://www.youtube.com/watch?v=VIDEO_ID
-- https://youtu.be/VIDEO_ID
-- https://www.youtube.com/shorts/VIDEO_ID
-- https://m.youtube.com/watch?v=VIDEO_ID
+- A local audio or video file path.
+- A YouTube video URL.
 
-Use the `asr-youtube` command for YouTube URLs.
+If the input is a local file, use Workflow A.
 
-The first version supports individual publicly accessible videos.
+If the input is a YouTube URL, use Workflow B.
 
-It does not promise support for:
+If the input is missing or unclear, ask the user for the file path or video URL.
 
-- Playlists
-- Private videos
-- Login-restricted videos
-- Age-restricted or otherwise inaccessible videos
+Never guess a file path or video URL.
 
-Never attempt to bypass access controls.
+### Step 2: Check the environment
 
-If the input is neither a local file nor a supported YouTube URL, ask the user to provide a valid input.
-
-## 4. Check the Environment
-
-Before running transcription, check the required commands.
-
-For local files:
+Check the required commands:
 
 ```bash
 python3 --version
@@ -86,14 +81,7 @@ ffprobe -version
 asr --help
 ```
 
-For YouTube URLs, additionally check:
-
-```bash
-yt-dlp --version
-asr-youtube --help
-```
-
-Check whether the API key is configured without displaying its value:
+Check the API key without displaying its value:
 
 ```bash
 if [ -n "$DASHSCOPE_API_KEY" ]; then
@@ -103,25 +91,26 @@ else
 fi
 ```
 
-Never print, expose, or transmit the API key to the user or unrelated services.
+For YouTube transcription, also check:
 
-If a required command is missing, explain which dependency is missing and provide the appropriate installation instructions.
+```bash
+yt-dlp --version
+asr-youtube --help
+```
 
-Do not claim that a command is installed unless its availability has been verified.
+Never print, expose, or transmit the API key to unrelated services.
 
-## 5. Workflow A: Local File Transcription
+## Workflow A: Local Audio and Video Transcription
 
-### Step 1: Identify the input file
+### Step A1: Identify the file
 
 Obtain the exact local file path from the user.
 
 If the user has not specified a file, ask for its location.
 
-Never guess a file path.
+### Step A2: Transcribe the file
 
-### Step 2: Transcribe the file
-
-Use:
+Basic transcription:
 
 ```bash
 asr "/absolute/path/to/input.mp4" --out "/absolute/path/to/result.txt"
@@ -135,56 +124,35 @@ To disable speaker separation:
 asr "/absolute/path/to/input.mp4" --no-speakers --out "/absolute/path/to/result.txt"
 ```
 
-To include sentence-level timestamps:
+To include timestamps:
 
 ```bash
 asr "/absolute/path/to/input.mp4" --timestamps --out "/absolute/path/to/result.txt"
 ```
 
-To preserve intermediate files for troubleshooting:
-
-```bash
-asr "/absolute/path/to/input.mp4" --keep-workdir --out "/absolute/path/to/result.txt"
-```
-
-### Step 3: Verify the output
+### Step A3: Verify the output
 
 After execution:
 
 1. Check the command exit status.
 2. Confirm that the output file exists.
 3. Check that the output file is not empty.
-4. Report the output file path to the user.
+4. Report the output file path.
 5. If transcription fails, explain the actual error.
 
 Do not claim successful transcription unless the output has been verified.
 
-## 6. Workflow B: YouTube Transcription
+## Workflow B: YouTube Video Transcription
 
-### Step 1: Identify the YouTube URL
+### Step B1: Obtain the YouTube URL
 
-Obtain the YouTube URL from the user.
+Ask the user to provide the YouTube video URL if it has not been supplied.
 
-If the user asks to transcribe a YouTube video and provides a URL, use the YouTube workflow.
+Do not download an entire playlist. The YouTube transcription command processes one video at a time.
 
-Do not pass a YouTube URL directly to the `asr` command.
+### Step B2: Transcribe the YouTube video
 
-### Step 2: Check the YouTube environment
-
-Run:
-
-```bash
-yt-dlp --version
-asr-youtube --help
-```
-
-Also verify the common requirements and API key configuration in Section 4.
-
-If `asr-youtube` is unavailable, explain that the YouTube transcription component has not been installed correctly.
-
-### Step 3: Download and transcribe
-
-Use the following command:
+Basic transcription:
 
 ```bash
 asr-youtube "https://www.youtube.com/watch?v=VIDEO_ID"
@@ -192,128 +160,126 @@ asr-youtube "https://www.youtube.com/watch?v=VIDEO_ID"
 
 The command automatically:
 
-1. Downloads the video's audio using yt-dlp.
-2. Extracts audio into MP3 format using ffmpeg.
-3. Sends the audio to Alibaba Cloud Bailian ASR.
-4. Saves the transcription result as a TXT file.
-5. Removes temporary audio files after successful execution.
+1. Validates the YouTube URL.
+2. Uses `yt-dlp` to download the video's audio.
+3. Uses ffmpeg to convert the audio to MP3.
+4. Calls the existing `asr` command.
+5. Generates a TXT transcript.
+6. Cleans up temporary audio files.
 
-The default behavior enables speaker diarization.
+The default transcript is saved in the current working directory.
 
-### Step 4: Optional parameters
+### Step B3: Specify the output file
 
-Specify the output file:
-
-```bash
-asr-youtube "URL" --out "/absolute/path/to/transcript.txt"
-```
-
-Include sentence-level timestamps:
+To specify the transcript path:
 
 ```bash
-asr-youtube "URL" --timestamps
+asr-youtube "https://www.youtube.com/watch?v=VIDEO_ID" --out "./transcript.txt"
 ```
 
-Disable speaker diarization:
+### Step B4: Enable timestamps
+
+To include timestamps:
 
 ```bash
-asr-youtube "URL" --no-speakers
+asr-youtube "https://www.youtube.com/watch?v=VIDEO_ID" --timestamps
 ```
 
-Keep the downloaded MP3 file:
+### Step B5: Disable speaker separation
+
+To disable speaker separation:
 
 ```bash
-asr-youtube "URL" --keep-audio
+asr-youtube "https://www.youtube.com/watch?v=VIDEO_ID" --no-speakers
 ```
 
-Combine options when needed:
+### Step B6: Keep the downloaded audio
+
+By default, temporary downloaded audio is removed after transcription.
+
+To keep a copy of the downloaded MP3 next to the transcript:
 
 ```bash
-asr-youtube "URL" --timestamps --keep-audio --out transcript.txt
+asr-youtube "https://www.youtube.com/watch?v=VIDEO_ID" --keep-audio
 ```
 
-### Step 5: Verify the output
+Options can be combined:
+
+```bash
+asr-youtube "https://www.youtube.com/watch?v=VIDEO_ID" \
+  --timestamps \
+  --keep-audio \
+  --out "./youtube-transcript.txt"
+```
+
+### Step B7: Verify the output
 
 After execution:
 
 1. Check the command exit status.
 2. Confirm that the transcript file exists.
-3. Check that the transcript file is not empty.
-4. Report the output path to the user.
-5. If requested, report the location of the retained MP3 file.
+3. Check that the transcript is not empty.
+4. Report the transcript path.
+5. If the user requested `--keep-audio`, confirm that the audio file exists.
 6. If transcription fails, explain the actual error.
 
 Do not claim successful transcription unless the output has been verified.
 
-## 7. Safety and Usage Rules
+## Common Command Options
 
-- Never overwrite the original audio or video file.
-- Do not expose API keys in logs or output.
-- Ask for permission before accessing local user files.
+| Option | Local ASR | YouTube ASR | Description |
+|---|---|---|---|
+| `--out` | Yes | Yes | Specify output TXT path |
+| `--timestamps` | Yes | Yes | Include timestamps |
+| `--no-speakers` | Yes | Yes | Disable speaker separation |
+| `--keep-audio` | No | Yes | Keep downloaded YouTube audio |
+
+## Safety Rules
+
+- Never overwrite original audio or video files.
 - Do not upload user files to unrelated services.
+- Do not expose API keys in logs or output.
+- Ask for permission before executing commands that access user files or download online media.
 - Keep generated transcripts separate from original media.
 - Do not invent missing dialogue or transcription content.
-- Only download YouTube content when the user has the necessary rights or authorization and the use complies with applicable laws and platform terms.
-- Never bypass private-video restrictions, DRM, login requirements, or other access controls.
-- Do not download playlists unless a future version explicitly supports them.
+- Do not download entire playlists unless the user explicitly requests a playlist workflow.
+- Do not bypass access restrictions on private or restricted videos.
 
-## 8. Example User Requests
+## Example User Requests
 
-Local file transcription:
+### Local files
 
 - Convert this MP4 video into Chinese text.
 - Extract dialogue from this MOV file.
 - Transcribe this meeting recording.
 - Identify different speakers in this audio.
 - Generate a timestamped transcript.
+- Save the transcription result as a TXT file.
 
-YouTube transcription:
+### YouTube videos
 
-- Transcribe this YouTube video.
-- Convert this YouTube link into Chinese text.
-- Extract the dialogue from this YouTube video.
-- Transcribe this video and identify different speakers.
-- Save the YouTube transcript with timestamps.
-- Download the audio and save both MP3 and TXT files.
+- Transcribe this YouTube video: [URL]
+- Convert this YouTube video into Chinese text.
+- Extract all spoken dialogue from this YouTube video.
+- Transcribe this YouTube video with timestamps.
+- Transcribe this YouTube video and keep the downloaded audio.
 
-## 9. Troubleshooting
+## Troubleshooting
 
 ### API key error
 
-Check whether `DASHSCOPE_API_KEY` is configured correctly.
+Check whether `DASHSCOPE_API_KEY` is configured and whether the key is valid.
 
-Never ask the user to paste their API key into the conversation.
+### ffmpeg or ffprobe not found
 
-### ffmpeg not found
-
-Install ffmpeg and ensure it is available in PATH.
-
-macOS:
-
-```bash
-brew install ffmpeg
-```
+Install ffmpeg and ensure both commands are available in PATH.
 
 ### asr command not found
 
-Install the original ASR package:
+Install the Python package:
 
 ```bash
-python3 -m pip install --upgrade audio-transcribe-cli-mcp
-```
-
-### yt-dlp not found
-
-macOS:
-
-```bash
-brew install yt-dlp
-```
-
-Other systems:
-
-```bash
-python3 -m pip install --user --upgrade yt-dlp
+python3 -m pip install audio-transcribe-cli-mcp
 ```
 
 ### asr-youtube command not found
@@ -324,33 +290,39 @@ Run the project installer again:
 bash install.sh
 ```
 
-Then reload the shell configuration:
-
-```bash
-source ~/.zshrc
-```
-
-Verify:
+Then check:
 
 ```bash
 asr-youtube --help
 ```
 
+### yt-dlp not found
+
+Install yt-dlp:
+
+```bash
+brew install yt-dlp
+```
+
+Then verify:
+
+```bash
+yt-dlp --version
+```
+
 ### YouTube download failure
 
-Possible causes:
+Check:
 
-- Invalid or inaccessible video URL
-- Network connection problems
-- YouTube changes affecting yt-dlp
-- Video access restrictions
-- Unsupported video format
-
-Check the actual yt-dlp error before recommending a solution.
+- Whether the URL is valid.
+- Whether the video is publicly accessible.
+- Whether yt-dlp is up to date.
+- Whether the network can access YouTube.
+- Whether ffmpeg is installed.
 
 ### Recognition failure
 
-Check network access, API key validity, Bailian service availability, and account quota.
+Check network access, API key validity, Alibaba Cloud Bailian service availability, and account quota.
 
 ### File not found
 
