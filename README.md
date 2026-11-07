@@ -629,9 +629,7 @@ fi
 - 输入文件是否完整。
 - 输出目录是否具有写入权限。
 
-- ### 8. 识别失败或没有生成 TXT
-
-- ### 9. Deno JavaScript Runtime（YouTube 转写必需）
+### 9. Deno JavaScript Runtime（YouTube 转写必需）
 
 从 YouTube 下载视频音频时，`yt-dlp` 需要 JavaScript Runtime 来完成 YouTube 视频信息提取。
 
